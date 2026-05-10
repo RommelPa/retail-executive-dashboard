@@ -333,7 +333,12 @@ def print_summary(
         print(f"{key}: {value:,}")
 
     print("\n2. Dashboard KPI snapshot")
-    print(kpis.round(4).to_string(index=False))
+    kpis_display = kpis.copy()
+
+    numeric_columns = kpis_display.select_dtypes(include=["number"]).columns
+    kpis_display[numeric_columns] = kpis_display[numeric_columns].round(4)
+
+    print(kpis_display.to_string(index=False))
 
     print("\n3. Dashboard transaction date range")
     print(f"Start date: {transactions['InvoiceDate'].min()}")
