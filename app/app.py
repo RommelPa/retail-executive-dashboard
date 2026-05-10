@@ -1053,7 +1053,7 @@ def render_tables(
             table["revenue"] = table["revenue"].map(format_currency)
             table["revenue_share"] = table["revenue_share"].map(format_percent)
 
-            st.dataframe(table, use_container_width=True, hide_index=True)
+            st.dataframe(table, width="stretch", hide_index=True)
 
         with tab2:
             table = product_summary[
@@ -1063,7 +1063,7 @@ def render_tables(
             table["revenue"] = table["revenue"].map(format_currency)
             table["revenue_share"] = table["revenue_share"].map(format_percent)
 
-            st.dataframe(table.head(50), use_container_width=True, hide_index=True)
+            st.dataframe(table.head(50), width="stretch", hide_index=True)
 
         with tab3:
             table = customer_summary[
@@ -1082,7 +1082,7 @@ def render_tables(
             table["revenue_share"] = table["revenue_share"].map(format_percent)
             table["cumulative_revenue_share"] = table["cumulative_revenue_share"].map(format_percent)
 
-            st.dataframe(table.head(50), use_container_width=True, hide_index=True)
+            st.dataframe(table.head(50), width="stretch", hide_index=True)
 
 
 def render_data_notes() -> None:
@@ -1198,7 +1198,7 @@ def main() -> None:
             )
             st.plotly_chart(
                 revenue_trend_chart(monthly_revenue),
-                use_container_width=True,
+                width="stretch",
                 config=PLOTLY_CONFIG,
             )
 
@@ -1209,7 +1209,7 @@ def main() -> None:
         )
         st.plotly_chart(
             country_share_chart(country_summary, top_n=top_n_countries),
-            use_container_width=True,
+            width="stretch",
             config=PLOTLY_CONFIG,
         )
 
@@ -1222,7 +1222,7 @@ def main() -> None:
         )
         st.plotly_chart(
             product_bar_chart(product_summary, top_n=top_n_products),
-            use_container_width=True,
+            width="stretch",
             config=PLOTLY_CONFIG,
         )
 
@@ -1233,14 +1233,14 @@ def main() -> None:
         )
         st.plotly_chart(
             customer_concentration_chart(customer_summary),
-            use_container_width=True,
+            width="stretch",
             config=PLOTLY_CONFIG,
         )
 
     st.markdown('<div class="section-title">Country Detail</div>', unsafe_allow_html=True)
     st.plotly_chart(
         country_bar_chart(country_summary, top_n=top_n_countries),
-        use_container_width=True,
+        width="stretch",
         config=PLOTLY_CONFIG,
     )
 
