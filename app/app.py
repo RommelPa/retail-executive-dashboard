@@ -11,7 +11,65 @@ import streamlit as st
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PROCESSED_DATA_DIR = PROJECT_ROOT / "data" / "processed"
-DASHBOARD_TRANSACTIONS_PATH = PROCESSED_DATA_DIR / "dashboard_transactions.csv"
+
+DEMO_DATA_DIR = PROJECT_ROOT / "data" / "demo"
+
+REQUIRED_DATA_FILES = [
+    "dashboard_transactions.csv",
+    "executive_kpis.csv",
+    "monthly_revenue.csv",
+    "country_summary.csv",
+    "product_summary.csv",
+    "customer_summary.csv",
+]
+
+
+def resolve_dashboard_data_dir() -> tuple[Path, str]:
+    processed_available = all(
+        (PROCESSED_DATA_DIR / file_name).exists()
+        for file_name in REQUIRED_DATA_FILES
+    )
+
+    if processed_available:
+        return PROCESSED_DATA_DIR, "Full local processed data"
+
+    demo_available = all(
+        (DEMO_DATA_DIR / file_name).exists()
+        for file_name in REQUIRED_DATA_FILES
+    )
+
+    if demo_available:
+        return DEMO_DATA_DIR, "Public demo data"
+
+    missing_processed = [
+        file_name
+        for file_name in REQUIRED_DATA_FILES
+        if not (PROCESSED_DATA_DIR / file_name).exists()
+    ]
+
+    missing_demo = [
+        file_name
+        for file_name in REQUIRED_DATA_FILES
+        if not (DEMO_DATA_DIR / file_name).exists()
+    ]
+
+    raise FileNotFoundError(
+        "Dashboard data files were not found.\n\n"
+        f"Missing processed files: {missing_processed}\n"
+        f"Missing demo files: {missing_demo}\n\n"
+        "Run `python src/prepare_dashboard_data.py` for local full data "
+        "or include `data/demo/` files for public deployment."
+    )
+
+
+DASHBOARD_DATA_DIR, DATA_SOURCE_LABEL = resolve_dashboard_data_dir()
+
+TRANSACTIONS_PATH = DASHBOARD_DATA_DIR / "dashboard_transactions.csv"
+EXECUTIVE_KPIS_PATH = DASHBOARD_DATA_DIR / "executive_kpis.csv"
+MONTHLY_REVENUE_PATH = DASHBOARD_DATA_DIR / "monthly_revenue.csv"
+COUNTRY_SUMMARY_PATH = DASHBOARD_DATA_DIR / "country_summary.csv"
+PRODUCT_SUMMARY_PATH = DASHBOARD_DATA_DIR / "product_summary.csv"
+CUSTOMER_SUMMARY_PATH = DASHBOARD_DATA_DIR / "customer_summary.csv"
 
 OPERATIONAL_STOCK_CODES = {
     "DOT",
@@ -299,14 +357,13 @@ def compute_delta(current_value: float, previous_value: float | None) -> tuple[s
 # -----------------------------------------------------------------------------
 @st.cache_data
 def load_dashboard_transactions() -> pd.DataFrame:
-    if not DASHBOARD_TRANSACTIONS_PATH.exists():
+    if not TRANSACTIONS_PATH.exists():
         raise FileNotFoundError(
-            "Processed dashboard data was not found. "
-            "Run `python src/prepare_dashboard_data.py` first."
+            f"Dashboard transactions file was not found at {TRANSACTIONS_PATH}."
         )
 
     data = pd.read_csv(
-        DASHBOARD_TRANSACTIONS_PATH,
+        TRANSACTIONS_PATH,
         dtype={
             "InvoiceNo": "str",
             "StockCode": "str",
@@ -989,6 +1046,7 @@ def render_sidebar(data: pd.DataFrame):
     st.sidebar.divider()
     st.sidebar.caption(f"Selected countries: {len(selected_countries)}")
     st.sidebar.caption("Data layer: valid sales only")
+    st.sidebar.caption(f"Data source: {DATA_SOURCE_LABEL}")
 
     return (
         selected_date_range,
