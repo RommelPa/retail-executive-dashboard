@@ -8,6 +8,11 @@ The goal is to transform transactional retail data into a decision-oriented dash
 
 The dashboard is built with Streamlit, pandas, Plotly, and reproducible Python data preparation scripts.
 
+The app supports two data modes:
+
+- **Full local processed data** for complete local analysis.
+- **Public demo data** for lightweight public deployment.
+
 ---
 
 ## Business Context
@@ -69,7 +74,7 @@ Expected columns:
 | `CustomerID` | Customer identifier |
 | `Country` | Customer country |
 
-> Raw data is not included in this repository. Place `online_retail.csv` inside `data/raw/` before running the pipeline.
+> Raw data is not included in this repository. Place `online_retail.csv` inside `data/raw/` before running the full local pipeline.
 
 ---
 
@@ -94,7 +99,7 @@ The raw data includes cancellations, negative quantities, non-positive prices, d
 
 The dashboard uses **valid sales transactions only**.
 
-Excluded from the dashboard data layer:
+Excluded from the full local dashboard data layer:
 
 - cancelled invoices,
 - non-positive quantities,
@@ -115,7 +120,7 @@ Product ranking can optionally exclude operational stock codes from the dashboar
 
 ## Processed Data Summary
 
-After cleaning and filtering:
+After cleaning and filtering the full dataset:
 
 | Metric | Value |
 |---|---:|
@@ -130,6 +135,8 @@ After cleaning and filtering:
 ---
 
 ## Executive KPI Snapshot
+
+Full local processed data produces the following KPI baseline:
 
 | KPI | Value |
 |---|---:|
@@ -219,7 +226,8 @@ The Streamlit dashboard includes:
 - customer concentration curve,
 - top customer concentration KPIs,
 - detailed country/product/customer tables,
-- data scope and assumptions section.
+- data scope and assumptions section,
+- automatic data-source fallback for public deployment.
 
 ---
 
@@ -230,11 +238,19 @@ retail-executive-dashboard/
 ├── app/
 │   └── app.py
 ├── data/
+│   ├── demo/
+│   │   ├── country_summary.csv
+│   │   ├── customer_summary.csv
+│   │   ├── dashboard_transactions.csv
+│   │   ├── executive_kpis.csv
+│   │   ├── monthly_revenue.csv
+│   │   └── product_summary.csv
 │   ├── raw/
 │   └── processed/
 ├── reports/
 │   └── figures/
 ├── src/
+│   ├── create_demo_data.py
 │   ├── load_data.py
 │   ├── prepare_dashboard_data.py
 │   └── validate_dashboard_data.py
@@ -249,7 +265,7 @@ retail-executive-dashboard/
 
 ## Pipeline
 
-The project has three reproducible data scripts.
+The project has four reproducible data scripts.
 
 ### 1. Load raw data
 
@@ -265,7 +281,7 @@ This script checks that the raw dataset exists and prints a basic raw data profi
 python src/prepare_dashboard_data.py
 ```
 
-This script creates the processed dashboard tables:
+This script creates the full processed dashboard tables:
 
 ```text
 data/processed/dashboard_transactions.csv
@@ -276,7 +292,7 @@ data/processed/product_summary.csv
 data/processed/customer_summary.csv
 ```
 
-These files are generated locally and are ignored by Git.
+These full processed files are generated locally and are ignored by Git.
 
 ### 3. Validate dashboard data
 
@@ -297,7 +313,97 @@ This script validates:
 - customer revenue reconciliation,
 - executive concentration diagnostics.
 
-The validation must pass before running or publishing the dashboard.
+The validation must pass before considering the full local data layer valid.
+
+### 4. Create public demo data
+
+```bash
+python src/create_demo_data.py
+```
+
+This script creates a compact public demo dataset from the full processed transaction layer.
+
+It generates:
+
+```text
+data/demo/dashboard_transactions.csv
+data/demo/executive_kpis.csv
+data/demo/monthly_revenue.csv
+data/demo/country_summary.csv
+data/demo/product_summary.csv
+data/demo/customer_summary.csv
+```
+
+The demo data is committed to GitHub so the dashboard can run in public deployment environments without the full raw or processed dataset.
+
+---
+
+## Public Demo Data
+
+This dashboard supports two data modes.
+
+### Full local processed data
+
+Used when all required files exist in:
+
+```text
+data/processed/
+```
+
+This mode is intended for complete local analysis.
+
+It is generated with:
+
+```bash
+python src/prepare_dashboard_data.py
+```
+
+### Public demo data
+
+Used automatically when the full processed files are not available.
+
+It is stored in:
+
+```text
+data/demo/
+```
+
+The demo data is a compact sample generated from the processed dashboard transactions. It preserves:
+
+- date coverage,
+- country coverage,
+- product variety,
+- customer variety,
+- dashboard filters,
+- chart functionality,
+- table functionality.
+
+The app automatically resolves the data source:
+
+```text
+data/processed/ → preferred for full local analysis
+data/demo/      → fallback for public deployment
+```
+
+The active data source is shown in the sidebar.
+
+---
+
+## Demo Data Summary
+
+The current public demo dataset contains:
+
+| Metric | Value |
+|---|---:|
+| Demo transaction rows | 6,667 |
+| Countries | 38 |
+| Products | 2,010 |
+| Orders | 3,671 |
+| Identified customers | 1,592 |
+| Demo revenue | £215,745.43 |
+| Date range | 2010-12-01 to 2011-12-09 |
+
+The demo dataset is designed for public demonstration. It should not be interpreted as the full business result.
 
 ---
 
@@ -324,7 +430,7 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 4. Add raw data
+### 4. Add raw data for full local mode
 
 Place the dataset here:
 
@@ -332,7 +438,7 @@ Place the dataset here:
 data/raw/online_retail.csv
 ```
 
-### 5. Run the data pipeline
+### 5. Run the full local data pipeline
 
 ```bash
 python src/load_data.py
@@ -352,6 +458,34 @@ Open the local URL shown by Streamlit, usually:
 http://localhost:8501
 ```
 
+If full processed data is available, the sidebar shows:
+
+```text
+Data source: Full local processed data
+```
+
+If full processed data is not available, the dashboard falls back to public demo data and the sidebar shows:
+
+```text
+Data source: Public demo data
+```
+
+---
+
+## Deployment Notes
+
+The dashboard can be deployed publicly using Streamlit Community Cloud.
+
+Recommended app entrypoint:
+
+```text
+app/app.py
+```
+
+The public deployment uses `data/demo/` by default because the full processed transaction file is intentionally not committed to GitHub.
+
+This keeps the repository lightweight while still allowing the dashboard to run publicly.
+
 ---
 
 ## Reproducibility Check
@@ -359,10 +493,11 @@ http://localhost:8501
 Before considering the dashboard valid, run:
 
 ```bash
-python -m py_compile app/app.py src/load_data.py src/prepare_dashboard_data.py src/validate_dashboard_data.py
+python -m py_compile app/app.py src/load_data.py src/prepare_dashboard_data.py src/validate_dashboard_data.py src/create_demo_data.py
 python src/load_data.py
 python src/prepare_dashboard_data.py
 python src/validate_dashboard_data.py
+python src/create_demo_data.py
 streamlit run app/app.py
 ```
 
@@ -371,6 +506,18 @@ Expected validation result:
 ```text
 Validation result
 All dashboard data validation checks passed.
+```
+
+Expected app behavior:
+
+```text
+Data source: Full local processed data
+```
+
+To simulate public deployment mode locally, temporarily move the full processed CSV files out of `data/processed/`. The app should fall back to:
+
+```text
+Data source: Public demo data
 ```
 
 ---
@@ -405,6 +552,18 @@ The first version focuses on valid sales monitoring. Returns, cancellations, and
 
 Codes such as postage and manual charges can materially affect product rankings. The dashboard allows users to view product rankings with or without those operational codes.
 
+### Why include demo data?
+
+The full processed transaction file is too large for a clean portfolio deployment workflow.
+
+The demo data keeps the repository lightweight and makes the dashboard deployable without requiring private local data files.
+
+### Why use automatic data fallback?
+
+The same app can support both local full analysis and public demo deployment.
+
+This avoids maintaining separate local and deployment versions of the dashboard.
+
 ---
 
 ## Limitations
@@ -416,6 +575,8 @@ Codes such as postage and manual charges can materially affect product rankings.
 - Customer concentration excludes unidentified customers.
 - Country and product analysis can be dominated by the United Kingdom.
 - Operational stock codes can affect product rankings if not excluded.
+- The public deployment uses compact demo data, not the full processed transaction layer.
+- Demo data is intended to demonstrate dashboard functionality, not reproduce full-data KPIs.
 - The dashboard is designed for executive monitoring, not audit-grade financial reporting.
 
 ---
@@ -441,9 +602,9 @@ Este proyecto construye un dashboard ejecutivo retail con Streamlit, pandas y Pl
 
 El dashboard transforma datos transaccionales en una herramienta de monitoreo comercial con KPIs, tendencia de revenue, concentración por país, ranking de productos, concentración de clientes y diagnóstico ejecutivo.
 
-El proyecto incluye carga de datos, preparación de una capa limpia para dashboard, validaciones de reconciliación, app interactiva tipo BI, filtros ejecutivos y documentación reproducible.
+El proyecto incluye carga de datos, preparación de una capa limpia para dashboard, validaciones de reconciliación, app interactiva tipo BI, filtros ejecutivos, documentación reproducible y una capa demo pública para despliegue.
 
-Hallazgos principales:
+Hallazgos principales con datos completos locales:
 
 - revenue total validado: £10.64M,
 - 19,960 órdenes válidas,
@@ -452,5 +613,10 @@ Hallazgos principales:
 - 16.49% del revenue no tiene cliente identificado,
 - top 10 clientes concentran 17.30% del revenue identificado,
 - códigos operativos representan 3.47% del revenue.
+
+La app soporta dos modos:
+
+- datos completos locales en `data/processed/`,
+- datos demo públicos en `data/demo/`.
 
 La app está diseñada para monitoreo ejecutivo, no para conciliación contable.
