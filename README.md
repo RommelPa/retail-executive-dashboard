@@ -15,6 +15,20 @@ The app supports two data modes:
 
 ---
 
+## Live Demo
+
+The dashboard is deployed on Streamlit Community Cloud:
+
+```text
+https://retail-executive-dashboard-8xbvujcjstgigvpkheppaj.streamlit.app/
+```
+
+The public deployment uses the lightweight demo data layer stored in `data/demo/`.
+
+For full local analysis, run the complete data pipeline with the raw dataset and use `data/processed/`.
+
+---
+
 ## Business Context
 
 Executives need fast visibility into commercial performance.
@@ -474,12 +488,20 @@ Data source: Public demo data
 
 ## Deployment Notes
 
-The dashboard can be deployed publicly using Streamlit Community Cloud.
+The dashboard is deployed on Streamlit Community Cloud.
 
-Recommended app entrypoint:
+Live app:
 
 ```text
-app/app.py
+https://retail-executive-dashboard-8xbvujcjstgigvpkheppaj.streamlit.app/
+```
+
+Deployment configuration:
+
+```text
+Repository: RommelPa/retail-executive-dashboard
+Branch: main
+Main file path: app/app.py
 ```
 
 The public deployment uses `data/demo/` by default because the full processed transaction file is intentionally not committed to GitHub.
@@ -529,6 +551,7 @@ Data source: Public demo data
 - Plotly
 - Streamlit
 - openpyxl
+- Streamlit Community Cloud
 - Git
 - GitHub
 
@@ -585,7 +608,6 @@ This avoids maintaining separate local and deployment versions of the dashboard.
 
 Possible extensions:
 
-- deploy the app on Streamlit Community Cloud,
 - add return and cancellation analysis,
 - add cohort-style customer retention views,
 - add product category mapping,
@@ -602,7 +624,13 @@ Este proyecto construye un dashboard ejecutivo retail con Streamlit, pandas y Pl
 
 El dashboard transforma datos transaccionales en una herramienta de monitoreo comercial con KPIs, tendencia de revenue, concentración por país, ranking de productos, concentración de clientes y diagnóstico ejecutivo.
 
-El proyecto incluye carga de datos, preparación de una capa limpia para dashboard, validaciones de reconciliación, app interactiva tipo BI, filtros ejecutivos, documentación reproducible y una capa demo pública para despliegue.
+El proyecto incluye carga de datos, preparación de una capa limpia para dashboard, validaciones de reconciliación, app interactiva tipo BI, filtros ejecutivos, documentación reproducible, una capa demo pública para despliegue y una demo pública en Streamlit Community Cloud.
+
+Demo pública:
+
+```text
+https://retail-executive-dashboard-8xbvujcjstgigvpkheppaj.streamlit.app/
+```
 
 Hallazgos principales con datos completos locales:
 
